@@ -1,0 +1,529 @@
+openapi: 3.1.0
+info:
+  title: Seoul Living Population APIs (Learning Project)
+  version: 0.1.0
+  description: >
+    생활인구 조회/집계 대시보드를 위한 학습용 API 스펙.
+    최소 기능 중심으로 설계되었으며, 추후 확장 전제로 단순화된 타입을 사용합니다.
+servers:
+  - url: /api/v1
+tags:
+  - name: Districts
+  - name: Population
+  - name: Trends
+  - name: Highlights
+  - name: Users
+  - name: Admin
+
+paths:
+  /districts:
+    get:
+      tags: [Districts]
+      summary: 자치구 목록
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: '#/components/schemas/District' }
+
+  /population/raw:
+    get:
+      tags: [Population]
+      summary: 원본 생활인구 데이터 조회
+      description: 날짜/시간대/자치구로 필터링. 학습용으로 간단 페이징만 제공.
+      parameters:
+        - in: query; name: districtId; required: true; schema: { type: integer, format: int64 }
+        - in: query; name: from;       required: true; schema: { type: string, format: date }
+        - in: query; name: to;         required: true; schema: { type: string, format: date }
+        - in: query; name: hourFrom;   required: false; schema: { type: integer, minimum: 0, maximum: 23 }
+        - in: query; name: hourTo;     required: false; schema: { type: integer, minimum: 0, maximum: 23 }
+        - in: query; name: page;       required: false; schema: { type: integer, minimum: 0, default: 0 }
+        - in: query; name: size;       required: false; schema: { type: integer, minimum: 1, maximum: 500, default: 100 }
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/PagePopulationRaw' }
+        '400': { $ref: '#/components/responses/BadRequest' }
+
+  /population/stats:
+    get:
+      tags: [Population]
+      summary: 집계(일/주/월) 평균 조회
+      parameters:
+        - in: query; name: districtId; required: true; schema: { type: integer, format: int64 }
+        - in: query; name: period; required: true; schema: { $ref: '#/components/schemas/PeriodType' } # DAILY|WEEKLY|MONTHLY
+        - in: query; name: from;   required: true; schema: { type: string, format: date }
+        - in: query; name: to;     required: true; schema: { type: string, format: date }
+        - in: query; name: gender; required: false; schema: { $ref: '#/components/schemas/Gender' }
+        - in: query; name: ageBucket; required: false; schema: { $ref: '#/components/schemas/AgeBucket' }
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/PopulationStatAgg' }
+        '400': { $ref: '#/components/responses/BadRequest' }
+
+  /population/trends/hourly:
+    get:
+      tags: [Trends]
+      summary: (일간) 시간대별 선그래프 데이터
+      parameters:
+        - in: query; name: districtId; required: true; schema: { type: integer, format: int64 }
+        - in: query; name: date;       required: true; schema: { type: string, format: date }
+        - in: query; name: gender;     required: false; schema: { $ref: '#/components/schemas/Gender' }
+        - in: query; name: ageBucket;  required: false; schema: { $ref: '#/components/schemas/AgeBucket' }
+        - in: query; name: compare;    required: false; schema: { type: string, enum: [lastWeek] }
+      responses:
+        '200':
+          description: 0-23시 시간대별 값과 비교선(옵션)
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/HourlyTrend' }
+
+  /population/trends/monthly:
+    get:
+      tags: [Trends]
+      summary: (월간) 월별 평균 선그래프 데이터
+      parameters:
+        - in: query; name: districtId; required: true; schema: { type: integer, format: int64 }
+        - in: query; name: months;     required: false; schema: { type: integer, minimum: 1, maximum: 24, default: 6 }
+        - in: query; name: gender;     required: false; schema: { $ref: '#/components/schemas/Gender' }
+        - in: query; name: ageBucket;  required: false; schema: { $ref: '#/components/schemas/AgeBucket' }
+      responses:
+        '200':
+          description: 최근 n개월 월별 평균
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/MonthlyTrend' }
+
+  /population/age-distribution:
+    get:
+      tags: [Population]
+      summary: 피라미드(성별/연령 분포)
+      parameters:
+        - in: query; name: districtId; required: true; schema: { type: integer, format: int64 }
+        - in: query; name: from;       required: true; schema: { type: string, format: date }
+        - in: query; name: to;         required: true; schema: { type: string, format: date }
+      responses:
+        '200':
+          description: 남/여 연령대별 평균치
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/AgeDistribution' }
+
+  /population/highlights:
+    get:
+      tags: [Highlights]
+      summary: KPI 카드(주간/야간 평균, 증감, 최대/최소)
+      parameters:
+        - in: query; name: districtId; required: true; schema: { type: integer, format: int64 }
+        - in: query; name: scope;      required: true; schema: { type: string, enum: [daily, weekly, monthly] }
+        - in: query; name: from;       required: true; schema: { type: string, format: date }
+        - in: query; name: to;         required: true; schema: { type: string, format: date }
+      responses:
+        '200':
+          description: 주간/야간 평균, 전일/전주/전월 대비 증감, 최대/최소 지표
+          content:
+            application/json:
+              schema: { $ref: '#/components/schemas/Highlights' }
+
+  /users/{userId}/favorites:
+    get:
+      tags: [Users]
+      summary: 관심 자치구 목록
+      parameters: [ { $ref: '#/components/parameters/UserId' } ]
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: '#/components/schemas/FavoriteDistrict' }
+    post:
+      tags: [Users]
+      summary: 관심 자치구 추가
+      parameters: [ { $ref: '#/components/parameters/UserId' } ]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/FavoriteDistrictCreate' }
+      responses:
+        '201': { description: Created }
+    put:
+      tags: [Users]
+      summary: 관심 자치구 일괄 업데이트(간단 학습용)
+      parameters: [ { $ref: '#/components/parameters/UserId' } ]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: array
+              items: { $ref: '#/components/schemas/FavoriteDistrictCreate' }
+      responses:
+        '200': { description: OK }
+    delete:
+      tags: [Users]
+      summary: 관심 자치구 전체 삭제
+      parameters: [ { $ref: '#/components/parameters/UserId' } ]
+      responses:
+        '204': { description: No Content }
+
+  /users/{userId}/presets:
+    get:
+      tags: [Users]
+      summary: 검색 필터 프리셋 목록
+      parameters: [ { $ref: '#/components/parameters/UserId' } ]
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: '#/components/schemas/Preset' }
+    post:
+      tags: [Users]
+      summary: 검색 필터 프리셋 생성
+      parameters: [ { $ref: '#/components/parameters/UserId' } ]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/PresetCreate' }
+      responses:
+        '201': { description: Created }
+
+  /users/{userId}/presets/{presetId}:
+    put:
+      tags: [Users]
+      summary: 검색 프리셋 수정
+      parameters:
+        - $ref: '#/components/parameters/UserId'
+        - in: path; name: presetId; required: true; schema: { type: integer, format: int64 }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/PresetUpdate' }
+      responses:
+        '200': { description: OK }
+    delete:
+      tags: [Users]
+      summary: 검색 프리셋 삭제
+      parameters:
+        - $ref: '#/components/parameters/UserId'
+        - in: path; name: presetId; required: true; schema: { type: integer, format: int64 }
+      responses:
+        '204': { description: No Content }
+
+  /users/{userId}/notes:
+    get:
+      tags: [Users]
+      summary: 자치구 메모 목록
+      parameters:
+        - $ref: '#/components/parameters/UserId'
+        - in: query; name: districtId; required: false; schema: { type: integer, format: int64 }
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items: { $ref: '#/components/schemas/Note' }
+    post:
+      tags: [Users]
+      summary: 자치구 메모 생성
+      parameters: [ { $ref: '#/components/parameters/UserId' } ]
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/NoteCreate' }
+      responses:
+        '201': { description: Created }
+
+  /users/{userId}/notes/{noteId}:
+    put:
+      tags: [Users]
+      summary: 자치구 메모 수정
+      parameters:
+        - $ref: '#/components/parameters/UserId'
+        - in: path; name: noteId; required: true; schema: { type: integer, format: int64 }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: { $ref: '#/components/schemas/NoteUpdate' }
+      responses:
+        '200': { description: OK }
+    delete:
+      tags: [Users]
+      summary: 자치구 메모 삭제
+      parameters:
+        - $ref: '#/components/parameters/UserId'
+        - in: path; name: noteId; required: true; schema: { type: integer, format: int64 }
+      responses:
+        '204': { description: No Content }
+
+  /admin/ingest-daily:
+    post:
+      tags: [Admin]
+      summary: (운영 편의) 당일 수집 실행 트리거
+      responses:
+        '202': { description: Accepted }
+
+  /admin/reaggregate:
+    post:
+      tags: [Admin]
+      summary: (운영 편의) 집계 전체/부분 재실행
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                districtIds: { type: array, items: { type: integer, format: int64 } }
+                range:
+                  type: object
+                  properties:
+                    from: { type: string, format: date }
+                    to:   { type: string, format: date }
+      responses:
+        '202': { description: Accepted }
+
+components:
+  parameters:
+    UserId:
+      in: path
+      name: userId
+      required: true
+      schema: { type: integer, format: int64 }
+
+  responses:
+    BadRequest:
+      description: 잘못된 요청
+      content:
+        application/json:
+          schema: { $ref: '#/components/schemas/ErrorResponse' }
+
+  schemas:
+    ErrorResponse:
+      type: object
+      properties:
+        code: { type: string, example: "BAD_REQUEST" }
+        message: { type: string, example: "Invalid parameter: from" }
+      required: [code, message]
+
+    PeriodType:
+      type: string
+      enum: [DAILY, WEEKLY, MONTHLY]
+
+    Gender:
+      type: string
+      enum: [TOTAL, MALE, FEMALE]
+      default: TOTAL
+
+    AgeBucket:
+      type: string
+      description: 공공데이터 표준 연령대 구간
+      enum: [F0T9, F10T14, F15T19, F20T24, F25T29, F30T34, F35T39, F40T44, F45T49, F50T54, F55T59, F60T64, F65T69, F70T74, F75T79, F80T84, F85T89, F90T94, F95T99]
+
+    District:
+      type: object
+      properties:
+        districtId: { type: integer, format: int64, example: 11010 }
+        name:       { type: string, example: "종로구" }
+      required: [districtId, name]
+
+    PopulationRaw:
+      type: object
+      properties:
+        districtId: { type: integer, format: int64 }
+        date:       { type: string, format: date }
+        hour:       { type: integer, minimum: 0, maximum: 23 }
+        total:      { type: integer }
+        maleBuckets:
+          type: object
+          additionalProperties: { type: number }
+          example: { F20T24: 1234, F25T29: 1402 }
+        femaleBuckets:
+          type: object
+          additionalProperties: { type: number }
+          example: { F20T24: 1180, F25T29: 1350 }
+      required: [districtId, date, hour, total, maleBuckets, femaleBuckets]
+
+    PagePopulationRaw:
+      type: object
+      properties:
+        content:
+          type: array
+          items: { $ref: '#/components/schemas/PopulationRaw' }
+        page: { type: integer, example: 0 }
+        size: { type: integer, example: 100 }
+        totalElements: { type: integer, example: 12345 }
+        totalPages: { type: integer, example: 125 }
+      required: [content, page, size, totalElements, totalPages]
+
+    PopulationStatAgg:
+      type: object
+      description: 집계 테이블에서 가져온 평균치(주간/야간 캐시 포함)
+      properties:
+        districtId: { type: integer, format: int64 }
+        periodType: { $ref: '#/components/schemas/PeriodType' }
+        periodStartDate: { type: string, format: date }
+        periodEndDate:   { type: string, format: date }
+        totalAvg:        { type: number }
+        maleBucketsAvg:
+          type: object
+          additionalProperties: { type: number }
+        femaleBucketsAvg:
+          type: object
+          additionalProperties: { type: number }
+        daytimeAvg:   { type: number, nullable: true, description: "06~18 평균" }
+        nighttimeAvg: { type: number, nullable: true, description: "18~05 평균" }
+      required: [districtId, periodType, periodStartDate, periodEndDate, totalAvg, maleBucketsAvg, femaleBucketsAvg]
+
+    HourlyTrend:
+      type: object
+      properties:
+        targetDate: { type: string, format: date }
+        series:
+          type: array
+          items:
+            type: object
+            properties:
+              hour:  { type: integer, minimum: 0, maximum: 23 }
+              value: { type: number }
+        compare:
+          type: object
+          nullable: true
+          properties:
+            label: { type: string, example: "lastWeek" }
+            series:
+              type: array
+              items:
+                type: object
+                properties:
+                  hour:  { type: integer }
+                  value: { type: number }
+      required: [targetDate, series]
+
+    MonthlyTrend:
+      type: object
+      properties:
+        months:
+          type: array
+          items:
+            type: object
+            properties:
+              yearMonth: { type: string, example: "2025-06" }
+              value:     { type: number }
+      required: [months]
+
+    AgeDistribution:
+      type: object
+      properties:
+        male:
+          type: object
+          additionalProperties: { type: number }
+          example: { F20T24: 1200, F25T29: 1400 }
+        female:
+          type: object
+          additionalProperties: { type: number }
+          example: { F20T24: 1100, F25T29: 1350 }
+      required: [male, female]
+
+    Highlights:
+      type: object
+      properties:
+        daytimeAvg:   { type: number, description: "06~18 평균" }
+        nighttimeAvg: { type: number, description: "18~05 평균" }
+        diffs:
+          type: object
+          properties:
+            vsPrevDay:  { type: number, nullable: true }
+            vsPrevWeek: { type: number, nullable: true }
+            vsPrevMonth:{ type: number, nullable: true }
+        maxima:
+          type: object
+          properties:
+            hour:   { type: integer, nullable: true }
+            weekday:{ type: string, nullable: true }
+            month:  { type: string, nullable: true }
+            ageBucket: { $ref: '#/components/schemas/AgeBucket', nullable: true }
+        minima:
+          type: object
+          properties:
+            hour:   { type: integer, nullable: true }
+            weekday:{ type: string, nullable: true }
+            month:  { type: string, nullable: true }
+            ageBucket: { $ref: '#/components/schemas/AgeBucket', nullable: true }
+
+    FavoriteDistrict:
+      type: object
+      properties:
+        districtId: { type: integer, format: int64 }
+        createdAt:  { type: string, format: date-time }
+      required: [districtId]
+
+    FavoriteDistrictCreate:
+      type: object
+      properties:
+        districtId: { type: integer, format: int64 }
+      required: [districtId]
+
+    Preset:
+      type: object
+      properties:
+        presetId: { type: integer, format: int64 }
+        name:     { type: string }
+        filters:
+          type: object
+          additionalProperties: true
+          description: 예) {"districtIds":[1,2],"dateFrom":"YYYY-MM-DD","dateTo":"YYYY-MM-DD","period":"WEEKLY","daynight":"DAYTIME"}
+
+    PresetCreate:
+      type: object
+      properties:
+        name:    { type: string }
+        filters: { type: object, additionalProperties: true }
+      required: [name, filters]
+
+    PresetUpdate:
+      type: object
+      properties:
+        name:    { type: string }
+        filters: { type: object, additionalProperties: true }
+
+    Note:
+      type: object
+      properties:
+        noteId:     { type: integer, format: int64 }
+        districtId: { type: integer, format: int64, nullable: true }
+        title:      { type: string, nullable: true }
+        content:    { type: string }
+        createdAt:  { type: string, format: date-time }
+      required: [noteId, content, createdAt]
+
+    NoteCreate:
+      type: object
+      properties:
+        districtId: { type: integer, format: int64, nullable: true }
+        title:      { type: string, nullable: true }
+        content:    { type: string }
+      required: [content]
+
+    NoteUpdate:
+      type: object
+      properties:
+        districtId: { type: integer, format: int64, nullable: true }
+        title:      { type: string, nullable: true }
+        content:    { type: string }
