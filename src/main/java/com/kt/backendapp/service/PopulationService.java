@@ -85,7 +85,6 @@ public class PopulationService {
         dto.setDistrictId(districtId);
         dto.setPeriodType(period);
         dto.setPeriodStartDate(from);
-        dto.setPeriodEndDate(to);
         dto.setTotalAvg(avgTotal);
         dto.setMaleBucketsAvg(avgMaleBuckets);
         dto.setFemaleBucketsAvg(avgFemaleBuckets);

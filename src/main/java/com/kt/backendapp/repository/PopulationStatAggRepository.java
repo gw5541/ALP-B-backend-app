@@ -22,7 +22,7 @@ public interface PopulationStatAggRepository extends JpaRepository<PopulationSta
      */
     @Query("SELECT p FROM PopulationStatAgg p WHERE p.districtId = :districtId " +
            "AND p.periodType = :periodType " +
-           "AND p.periodStartDate >= :from AND p.periodEndDate <= :to " +
+           "AND p.periodStartDate >= :from AND p.periodStartDate <= :to " +
            "ORDER BY p.periodStartDate ASC")
     List<PopulationStatAgg> findByConditions(
         @Param("districtId") Long districtId,
@@ -34,8 +34,8 @@ public interface PopulationStatAggRepository extends JpaRepository<PopulationSta
     /**
      * 특정 기간의 집계 데이터 조회
      */
-    Optional<PopulationStatAgg> findByDistrictIdAndPeriodTypeAndPeriodStartDateAndPeriodEndDate(
-        Long districtId, PeriodType periodType, LocalDate periodStartDate, LocalDate periodEndDate
+    Optional<PopulationStatAgg> findByDistrictIdAndPeriodTypeAndPeriodStartDate(
+        Long districtId, PeriodType periodType, LocalDate periodStartDate
     );
     
     /**

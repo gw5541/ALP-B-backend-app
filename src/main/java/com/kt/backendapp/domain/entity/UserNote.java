@@ -30,9 +30,6 @@ public class UserNote {
     @Column(name = "district_id")
     private Long districtId;
     
-    @Column(name = "title", nullable = false)
-    private String title;
-    
     @Column(name = "content")
     private String content;
     

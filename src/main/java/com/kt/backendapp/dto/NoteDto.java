@@ -17,7 +17,6 @@ public class NoteDto {
     private Long userId;
     private Long districtId;
     private String districtName;
-    private String title;
     private String content;
     private LocalDateTime createdAt;
     
@@ -26,7 +25,6 @@ public class NoteDto {
         this.userId = entity.getUserId();
         this.districtId = entity.getDistrictId();
         this.districtName = entity.getDistrict() != null ? entity.getDistrict().getName() : null;
-        this.title = entity.getTitle();
         this.content = entity.getContent();
         this.createdAt = entity.getCreatedAt();
     }

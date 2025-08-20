@@ -60,7 +60,6 @@ public class NoteService {
         UserNote note = new UserNote();
         note.setUserId(userId);
         note.setDistrictId(request.getDistrictId());
-        note.setTitle(request.getTitle());
         note.setContent(request.getContent());
         
         UserNote saved = noteRepository.save(note);
@@ -91,9 +90,6 @@ public class NoteService {
             note.setDistrictId(request.getDistrictId());
         }
         
-        if (request.getTitle() != null) {
-            note.setTitle(request.getTitle());
-        }
         if (request.getContent() != null) {
             note.setContent(request.getContent());
         }

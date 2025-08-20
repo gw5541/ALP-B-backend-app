@@ -38,9 +38,7 @@ public class PopulationStatAgg {
     @Column(name = "period_start_date")
     private LocalDate periodStartDate;
     
-    @Id
-    @Column(name = "period_end_date")
-    private LocalDate periodEndDate;
+
     
     @Column(name = "tot_avg")
     private Long totAvg;
@@ -74,7 +72,6 @@ public class PopulationStatAgg {
         private Long districtId;
         private PeriodType periodType;
         private LocalDate periodStartDate;
-        private LocalDate periodEndDate;
         
         @Override
         public boolean equals(Object o) {
@@ -85,8 +82,7 @@ public class PopulationStatAgg {
             
             if (!districtId.equals(that.districtId)) return false;
             if (periodType != that.periodType) return false;
-            if (!periodStartDate.equals(that.periodStartDate)) return false;
-            return periodEndDate.equals(that.periodEndDate);
+            return periodStartDate.equals(that.periodStartDate);
         }
         
         @Override
@@ -94,7 +90,6 @@ public class PopulationStatAgg {
             int result = districtId.hashCode();
             result = 31 * result + periodType.hashCode();
             result = 31 * result + periodStartDate.hashCode();
-            result = 31 * result + periodEndDate.hashCode();
             return result;
         }
     }

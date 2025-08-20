@@ -435,7 +435,7 @@ components:
     AgeBucket:
       type: string
       description: 공공데이터 표준 연령대 구간
-      enum: [F0T9, F10T14, F15T19, F20T24, F25T29, F30T34, F35T39, F40T44, F45T49, F50T54, F55T59, F60T64, F65T69, F70T74, F75T79, F80T84, F85T89, F90T94, F95T99]
+      [F0T9, F10T14, F15T19, F20T24, F25T29, F30T34, F35T39, F40T44, F45T49, F50T54, F55T59, F60T64, F65T69, F70P]
 
     District:
       type: object

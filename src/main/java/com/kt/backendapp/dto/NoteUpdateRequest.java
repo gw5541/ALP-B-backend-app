@@ -11,6 +11,5 @@ import lombok.Setter;
 public class NoteUpdateRequest {
     
     private Long districtId;
-    private String title;
     private String content;
 }

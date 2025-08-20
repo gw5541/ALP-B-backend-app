@@ -21,7 +21,6 @@ public class PopulationAggDto {
     private String districtName;
     private PeriodType periodType;
     private LocalDate periodStartDate;
-    private LocalDate periodEndDate;
     private Long totalAvg;
     private Map<String, Number> maleBucketsAvg;
     private Map<String, Number> femaleBucketsAvg;
@@ -33,7 +32,6 @@ public class PopulationAggDto {
         this.districtName = entity.getDistrict() != null ? entity.getDistrict().getName() : null;
         this.periodType = entity.getPeriodType();
         this.periodStartDate = entity.getPeriodStartDate();
-        this.periodEndDate = entity.getPeriodEndDate();
         this.totalAvg = entity.getTotAvg();
         this.maleBucketsAvg = entity.getMaleBucketsAvg();
         this.femaleBucketsAvg = entity.getFemaleBucketsAvg();
