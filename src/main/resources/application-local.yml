@@ -1,0 +1,23 @@
+spring:
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+    defer-datasource-initialization: true  # 테이블 생성 후 데이터 로딩
+    
+  sql:
+    init:
+      mode: always  # 항상 data.sql 실행
+      continue-on-error: false  # SQL 오류 시 중단
+      
+  devtools:
+    restart:
+      enabled: true
+    livereload:
+      enabled: true
+
+logging:
+  level:
+    org.hibernate.SQL: DEBUG
+    org.hibernate.type.descriptor.sql.BasicBinder: TRACE
+    org.springframework.jdbc.datasource.init: DEBUG  # SQL 초기화 로그
