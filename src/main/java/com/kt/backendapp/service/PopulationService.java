@@ -14,6 +14,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.time.YearMonth;
 import java.util.*;
@@ -53,15 +54,19 @@ public class PopulationService {
     }
     
     /**
-     * 집계 통계 조회
+     * 집계 통계 조회 (수정된 버전)
      */
     public List<PopulationAggDto> getAggStats(Long districtId, PeriodType period, LocalDate from, LocalDate to,
                                               String gender, String ageBucket) {
         // 자치구 존재 확인
         districtService.getDistrictById(districtId);
         
-        // 집계 데이터 우선 조회
-        List<PopulationStatAgg> aggList = aggRepository.findByConditions(districtId, period, from, to);
+        // 기간 타입에 따라 조회할 날짜 범위 계산
+        LocalDate adjustedFrom = adjustDateForPeriodType(from, period);
+        LocalDate adjustedTo = adjustDateForPeriodType(to, period);
+        
+        // 집계 데이터 우선 조회 (조정된 날짜로)
+        List<PopulationStatAgg> aggList = aggRepository.findByConditions(districtId, period, adjustedFrom, adjustedTo);
         
         if (!aggList.isEmpty()) {
             return aggList.stream()
@@ -195,5 +200,31 @@ public class PopulationService {
         }
         
         return avgBuckets;
+    }
+
+    /**
+     * 기간 타입에 따라 날짜를 해당 기간의 시작일로 조정
+     */
+    private LocalDate adjustDateForPeriodType(LocalDate date, PeriodType periodType) {
+        switch (periodType) {
+            case WEEKLY:
+                // 해당 주의 월요일 (ISO 8601 기준)
+                return date.with(DayOfWeek.MONDAY);
+                
+            case MONTHLY:
+                // 해당 월의 1일
+                return date.withDayOfMonth(1);
+                
+            case YEARLY:
+                // 해당 년의 1월 1일
+                return date.withDayOfYear(1);
+                
+            case DAILY:
+            case DAYTIME:
+            case NIGHTTIME:
+            default:
+                // 일별/시간대별은 그대로
+                return date;
+        }
     }
 }
