@@ -49,9 +49,9 @@ INSERT INTO population_stat_raw (district_id, stdr_de_id, tmzon_pd_se, tot, male
 ON CONFLICT (district_id, stdr_de_id, tmzon_pd_se) DO NOTHING;
 
 -- 집계 데이터 샘플 (DAILY)
-INSERT INTO population_stat_agg (district_id, period_type, period_start_date, period_end_date, tot_avg, male_buckets_avg, female_buckets_avg, daytime_avg, nighttime_avg) VALUES 
-(11010, 'DAILY', '2025-01-15', '2025-01-15', 18333,
+INSERT INTO population_stat_agg (district_id, period_type, period_start_date, tot_avg, male_buckets_avg, female_buckets_avg, daytime_avg, nighttime_avg) VALUES 
+(11010, 'DAILY', '2025-01-15', 18333,
  '{"F0T9": 600, "F10T14": 350, "F15T19": 500, "F20T24": 1833, "F25T29": 2200, "F30T34": 2000, "F35T39": 1700, "F40T44": 1433, "F45T49": 1200, "F50T54": 1000, "F55T59": 733, "F60T64": 500, "F65T69": 350, "F70T74": 600}',
  '{"F0T9": 580, "F10T14": 340, "F15T19": 520, "F20T24": 1683, "F25T29": 2100, "F30T34": 1900, "F35T39": 1600, "F40T44": 1367, "F45T49": 1150, "F50T54": 933, "F55T59": 710, "F60T64": 520, "F65T69": 377, "F70T74": 678}',
  19000, 14000)
-ON CONFLICT (district_id, period_type, period_start_date, period_end_date) DO NOTHING;
+ON CONFLICT (district_id, period_type, period_start_date) DO NOTHING;
