@@ -13,7 +13,7 @@ spring:
   
   jpa:
     hibernate:
-      ddl-auto: update
+      ddl-auto: validate # 자동 변경 방지
     show-sql: true
     properties:
       hibernate:

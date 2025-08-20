@@ -1,10 +1,8 @@
 openapi: 3.1.0
 info:
   title: Seoul Living Population APIs (Learning Project)
-  version: 0.1.0
-  description: >
-    생활인구 조회/집계 대시보드를 위한 학습용 API 스펙.
-    최소 기능 중심으로 설계되었으며, 추후 확장 전제로 단순화된 타입을 사용합니다.
+  version: 0.1.1
+  description: 생활인구 조회/집계 대시보드를 위한 학습용 API 스펙(ERD 변경 반영).
 servers:
   - url: /api/v1
 tags:
@@ -33,15 +31,35 @@ paths:
     get:
       tags: [Population]
       summary: 원본 생활인구 데이터 조회
-      description: 날짜/시간대/자치구로 필터링. 학습용으로 간단 페이징만 제공.
       parameters:
-        - in: query; name: districtId; required: true; schema: { type: integer, format: int64 }
-        - in: query; name: from;       required: true; schema: { type: string, format: date }
-        - in: query; name: to;         required: true; schema: { type: string, format: date }
-        - in: query; name: hourFrom;   required: false; schema: { type: integer, minimum: 0, maximum: 23 }
-        - in: query; name: hourTo;     required: false; schema: { type: integer, minimum: 0, maximum: 23 }
-        - in: query; name: page;       required: false; schema: { type: integer, minimum: 0, default: 0 }
-        - in: query; name: size;       required: false; schema: { type: integer, minimum: 1, maximum: 500, default: 100 }
+        - in: query
+          name: districtId
+          required: true
+          schema: { type: integer, format: int64 }
+        - in: query
+          name: from
+          required: true
+          schema: { type: string, format: date }
+        - in: query
+          name: to
+          required: true
+          schema: { type: string, format: date }
+        - in: query
+          name: hourFrom
+          required: false
+          schema: { type: integer, minimum: 0, maximum: 23 }
+        - in: query
+          name: hourTo
+          required: false
+          schema: { type: integer, minimum: 0, maximum: 23 }
+        - in: query
+          name: page
+          required: false
+          schema: { type: integer, minimum: 0, default: 0 }
+        - in: query
+          name: size
+          required: false
+          schema: { type: integer, minimum: 1, maximum: 500, default: 100 }
       responses:
         '200':
           description: OK
@@ -55,12 +73,30 @@ paths:
       tags: [Population]
       summary: 집계(일/주/월) 평균 조회
       parameters:
-        - in: query; name: districtId; required: true; schema: { type: integer, format: int64 }
-        - in: query; name: period; required: true; schema: { $ref: '#/components/schemas/PeriodType' } # DAILY|WEEKLY|MONTHLY
-        - in: query; name: from;   required: true; schema: { type: string, format: date }
-        - in: query; name: to;     required: true; schema: { type: string, format: date }
-        - in: query; name: gender; required: false; schema: { $ref: '#/components/schemas/Gender' }
-        - in: query; name: ageBucket; required: false; schema: { $ref: '#/components/schemas/AgeBucket' }
+        - in: query
+          name: districtId
+          required: true
+          schema: { type: integer, format: int64 }
+        - in: query
+          name: period
+          required: true
+          schema: { $ref: '#/components/schemas/PeriodType' }
+        - in: query
+          name: from
+          required: true
+          schema: { type: string, format: date }
+        - in: query
+          name: to
+          required: true
+          schema: { type: string, format: date }
+        - in: query
+          name: gender
+          required: false
+          schema: { $ref: '#/components/schemas/Gender' }
+        - in: query
+          name: ageBucket
+          required: false
+          schema: { $ref: '#/components/schemas/AgeBucket' }
       responses:
         '200':
           description: OK
@@ -74,11 +110,26 @@ paths:
       tags: [Trends]
       summary: (일간) 시간대별 선그래프 데이터
       parameters:
-        - in: query; name: districtId; required: true; schema: { type: integer, format: int64 }
-        - in: query; name: date;       required: true; schema: { type: string, format: date }
-        - in: query; name: gender;     required: false; schema: { $ref: '#/components/schemas/Gender' }
-        - in: query; name: ageBucket;  required: false; schema: { $ref: '#/components/schemas/AgeBucket' }
-        - in: query; name: compare;    required: false; schema: { type: string, enum: [lastWeek] }
+        - in: query
+          name: districtId
+          required: true
+          schema: { type: integer, format: int64 }
+        - in: query
+          name: date
+          required: true
+          schema: { type: string, format: date }
+        - in: query
+          name: gender
+          required: false
+          schema: { $ref: '#/components/schemas/Gender' }
+        - in: query
+          name: ageBucket
+          required: false
+          schema: { $ref: '#/components/schemas/AgeBucket' }
+        - in: query
+          name: compare
+          required: false
+          schema: { type: string, enum: [lastWeek] }
       responses:
         '200':
           description: 0-23시 시간대별 값과 비교선(옵션)
@@ -91,10 +142,22 @@ paths:
       tags: [Trends]
       summary: (월간) 월별 평균 선그래프 데이터
       parameters:
-        - in: query; name: districtId; required: true; schema: { type: integer, format: int64 }
-        - in: query; name: months;     required: false; schema: { type: integer, minimum: 1, maximum: 24, default: 6 }
-        - in: query; name: gender;     required: false; schema: { $ref: '#/components/schemas/Gender' }
-        - in: query; name: ageBucket;  required: false; schema: { $ref: '#/components/schemas/AgeBucket' }
+        - in: query
+          name: districtId
+          required: true
+          schema: { type: integer, format: int64 }
+        - in: query
+          name: months
+          required: false
+          schema: { type: integer, minimum: 1, maximum: 24, default: 6 }
+        - in: query
+          name: gender
+          required: false
+          schema: { $ref: '#/components/schemas/Gender' }
+        - in: query
+          name: ageBucket
+          required: false
+          schema: { $ref: '#/components/schemas/AgeBucket' }
       responses:
         '200':
           description: 최근 n개월 월별 평균
@@ -107,9 +170,18 @@ paths:
       tags: [Population]
       summary: 피라미드(성별/연령 분포)
       parameters:
-        - in: query; name: districtId; required: true; schema: { type: integer, format: int64 }
-        - in: query; name: from;       required: true; schema: { type: string, format: date }
-        - in: query; name: to;         required: true; schema: { type: string, format: date }
+        - in: query
+          name: districtId
+          required: true
+          schema: { type: integer, format: int64 }
+        - in: query
+          name: from
+          required: true
+          schema: { type: string, format: date }
+        - in: query
+          name: to
+          required: true
+          schema: { type: string, format: date }
       responses:
         '200':
           description: 남/여 연령대별 평균치
@@ -122,10 +194,22 @@ paths:
       tags: [Highlights]
       summary: KPI 카드(주간/야간 평균, 증감, 최대/최소)
       parameters:
-        - in: query; name: districtId; required: true; schema: { type: integer, format: int64 }
-        - in: query; name: scope;      required: true; schema: { type: string, enum: [daily, weekly, monthly] }
-        - in: query; name: from;       required: true; schema: { type: string, format: date }
-        - in: query; name: to;         required: true; schema: { type: string, format: date }
+        - in: query
+          name: districtId
+          required: true
+          schema: { type: integer, format: int64 }
+        - in: query
+          name: scope
+          required: true
+          schema: { type: string, enum: [daily, weekly, monthly] }
+        - in: query
+          name: from
+          required: true
+          schema: { type: string, format: date }
+        - in: query
+          name: to
+          required: true
+          schema: { type: string, format: date }
       responses:
         '200':
           description: 주간/야간 평균, 전일/전주/전월 대비 증감, 최대/최소 지표
@@ -206,7 +290,10 @@ paths:
       summary: 검색 프리셋 수정
       parameters:
         - $ref: '#/components/parameters/UserId'
-        - in: path; name: presetId; required: true; schema: { type: integer, format: int64 }
+        - in: path
+          name: presetId
+          required: true
+          schema: { type: integer, format: int64 }
       requestBody:
         required: true
         content:
@@ -219,7 +306,10 @@ paths:
       summary: 검색 프리셋 삭제
       parameters:
         - $ref: '#/components/parameters/UserId'
-        - in: path; name: presetId; required: true; schema: { type: integer, format: int64 }
+        - in: path
+          name: presetId
+          required: true
+          schema: { type: integer, format: int64 }
       responses:
         '204': { description: No Content }
 
@@ -229,7 +319,10 @@ paths:
       summary: 자치구 메모 목록
       parameters:
         - $ref: '#/components/parameters/UserId'
-        - in: query; name: districtId; required: false; schema: { type: integer, format: int64 }
+        - in: query
+          name: districtId
+          required: false
+          schema: { type: integer, format: int64 }
       responses:
         '200':
           content:
@@ -255,7 +348,10 @@ paths:
       summary: 자치구 메모 수정
       parameters:
         - $ref: '#/components/parameters/UserId'
-        - in: path; name: noteId; required: true; schema: { type: integer, format: int64 }
+        - in: path
+          name: noteId
+          required: true
+          schema: { type: integer, format: int64 }
       requestBody:
         required: true
         content:
@@ -268,7 +364,10 @@ paths:
       summary: 자치구 메모 삭제
       parameters:
         - $ref: '#/components/parameters/UserId'
-        - in: path; name: noteId; required: true; schema: { type: integer, format: int64 }
+        - in: path
+          name: noteId
+          required: true
+          schema: { type: integer, format: int64 }
       responses:
         '204': { description: No Content }
 
@@ -290,7 +389,9 @@ paths:
             schema:
               type: object
               properties:
-                districtIds: { type: array, items: { type: integer, format: int64 } }
+                districtIds:
+                  type: array
+                  items: { type: integer, format: int64 }
                 range:
                   type: object
                   properties:
@@ -334,7 +435,7 @@ components:
     AgeBucket:
       type: string
       description: 공공데이터 표준 연령대 구간
-      enum: [F0T9, F10T14, F15T19, F20T24, F25T29, F30T34, F35T39, F40T44, F45T49, F50T54, F55T59, F60T64, F65T69, F70P]
+      enum: [F0T9, F10T14, F15T19, F20T24, F25T29, F30T34, F35T39, F40T44, F45T49, F50T54, F55T59, F60T64, F65T69, F70T74, F75T79, F80T84, F85T89, F90T94, F95T99]
 
     District:
       type: object
@@ -372,6 +473,7 @@ components:
         totalPages: { type: integer, example: 125 }
       required: [content, page, size, totalElements, totalPages]
 
+    # 변경 1: periodEndDate 제거
     PopulationStatAgg:
       type: object
       description: 집계 테이블에서 가져온 평균치(주간/야간 캐시 포함)
@@ -379,7 +481,6 @@ components:
         districtId: { type: integer, format: int64 }
         periodType: { $ref: '#/components/schemas/PeriodType' }
         periodStartDate: { type: string, format: date }
-        periodEndDate:   { type: string, format: date }
         totalAvg:        { type: number }
         maleBucketsAvg:
           type: object
@@ -389,7 +490,13 @@ components:
           additionalProperties: { type: number }
         daytimeAvg:   { type: number, nullable: true, description: "06~18 평균" }
         nighttimeAvg: { type: number, nullable: true, description: "18~05 평균" }
-      required: [districtId, periodType, periodStartDate, periodEndDate, totalAvg, maleBucketsAvg, femaleBucketsAvg]
+      required:
+        - districtId
+        - periodType
+        - periodStartDate
+        - totalAvg
+        - maleBucketsAvg
+        - femaleBucketsAvg
 
     HourlyTrend:
       type: object
@@ -480,6 +587,7 @@ components:
         districtId: { type: integer, format: int64 }
       required: [districtId]
 
+    # 변경 2: Preset에서 name을 필수(required)로 명시
     Preset:
       type: object
       properties:
@@ -489,6 +597,7 @@ components:
           type: object
           additionalProperties: true
           description: 예) {"districtIds":[1,2],"dateFrom":"YYYY-MM-DD","dateTo":"YYYY-MM-DD","period":"WEEKLY","daynight":"DAYTIME"}
+      required: [presetId, name, filters]
 
     PresetCreate:
       type: object
@@ -503,12 +612,12 @@ components:
         name:    { type: string }
         filters: { type: object, additionalProperties: true }
 
+    # 변경 3: Note/NoteCreate/NoteUpdate에서 title 제거
     Note:
       type: object
       properties:
         noteId:     { type: integer, format: int64 }
         districtId: { type: integer, format: int64, nullable: true }
-        title:      { type: string, nullable: true }
         content:    { type: string }
         createdAt:  { type: string, format: date-time }
       required: [noteId, content, createdAt]
@@ -517,7 +626,6 @@ components:
       type: object
       properties:
         districtId: { type: integer, format: int64, nullable: true }
-        title:      { type: string, nullable: true }
         content:    { type: string }
       required: [content]
 
@@ -525,5 +633,4 @@ components:
       type: object
       properties:
         districtId: { type: integer, format: int64, nullable: true }
-        title:      { type: string, nullable: true }
         content:    { type: string }
