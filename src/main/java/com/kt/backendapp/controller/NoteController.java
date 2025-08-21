@@ -60,7 +60,7 @@ public class NoteController {
             // @Parameter(description = "메모 ID", required = true)
             @PathVariable Long noteId,
             
-            @RequestBody NoteUpdateRequest request
+            @Valid @RequestBody NoteUpdateRequest request
     ) {
         NoteDto note = noteService.updateNote(userId, noteId, request);
         return ResponseEntity.ok(note);
