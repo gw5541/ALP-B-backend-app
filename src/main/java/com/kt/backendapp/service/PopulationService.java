@@ -17,6 +17,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.time.YearMonth;
+import java.time.temporal.WeekFields;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -171,6 +172,28 @@ public class PopulationService {
     }
     
     /**
+     * 주별 트렌드 조회
+     */
+    public WeeklyTrendDto getWeeklyTrend(Long districtId, int weeks, String gender, String ageBucket) {
+        // 자치구 존재 확인
+        var district = districtService.getDistrictById(districtId);
+        
+        // 최근 N주 데이터 조회 - Monthly와 동일한 로직으로 수정
+        LocalDate fromDate = LocalDate.now().minusWeeks(weeks);
+        List<PopulationStatAgg> weeklyAggList = aggRepository.findRecentWeeklyData(districtId, fromDate);
+        
+        List<WeeklyTrendDto.WeeklyData> weeklyDataList = weeklyAggList.stream()
+                .map(agg -> new WeeklyTrendDto.WeeklyData(
+                        formatWeekPeriod(agg.getPeriodStartDate()),
+                        agg.getTotAvg(),
+                        agg.getMaleBucketsAvg(),
+                        agg.getFemaleBucketsAvg()))
+                .collect(Collectors.toList());
+        
+        return new WeeklyTrendDto(districtId, district.getName(), weeklyDataList);
+    }
+
+    /**
      * 버킷별 평균 계산 헬퍼 메서드
      */
     private Map<String, Number> calculateAverageBuckets(List<PopulationStatRaw> rawList, boolean isMale) {
@@ -226,5 +249,12 @@ public class PopulationService {
                 // 일별/시간대별은 그대로
                 return date;
         }
+    }
+
+    /**
+     * 날짜를 ISO 주 형식으로 변환 (예: "2025-W03")
+     */
+    private String formatWeekPeriod(LocalDate date) {
+        return date.getYear() + "-W" + String.format("%02d", date.get(WeekFields.ISO.weekOfYear()));
     }
 }

@@ -142,4 +142,24 @@ public class PopulationController {
         AgeDistributionDto response = populationService.getAgeDistribution(districtId, from, to);
         return ResponseEntity.ok(response);
     }
+
+    // @Operation(summary = "주별 트렌드 조회", description = "최근 N주의 주별 평균 인구 변화를 조회합니다")
+    @GetMapping("/trends/weekly")
+    public ResponseEntity<WeeklyTrendDto> getWeeklyTrend(
+            // @Parameter(description = "자치구 ID", required = true)
+            @RequestParam Long districtId,
+            
+            // @Parameter(description = "조회할 주 수")
+            @RequestParam(defaultValue = "8") @Min(1) int weeks,
+            
+            // @Parameter(description = "성별 필터")
+            @RequestParam(required = false) String gender,
+            
+            // @Parameter(description = "연령대 필터")
+            @RequestParam(required = false) String ageBucket
+    ) {
+        WeeklyTrendDto response = populationService.getWeeklyTrend(
+                districtId, weeks, gender, ageBucket);
+        return ResponseEntity.ok(response);
+    }
 }

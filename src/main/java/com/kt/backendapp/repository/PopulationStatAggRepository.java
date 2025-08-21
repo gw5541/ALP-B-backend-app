@@ -10,6 +10,8 @@ import org.springframework.stereotype.Repository;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
+import java.time.DayOfWeek;
+import java.time.temporal.WeekFields;
 
 /**
  * 인구 통계 집계 Repository
@@ -50,6 +52,18 @@ public interface PopulationStatAggRepository extends JpaRepository<PopulationSta
            "AND p.periodStartDate >= :fromDate " +
            "ORDER BY p.periodStartDate DESC")
     List<PopulationStatAgg> findRecentMonthlyData(
+        @Param("districtId") Long districtId,
+        @Param("fromDate") LocalDate fromDate
+    );
+
+    /**
+     * 최근 N주 데이터 조회
+     */
+    @Query("SELECT p FROM PopulationStatAgg p JOIN FETCH p.district WHERE p.districtId = :districtId " +
+           "AND p.periodType = 'WEEKLY' " +
+           "AND p.periodStartDate >= :fromDate " +
+           "ORDER BY p.periodStartDate DESC")
+    List<PopulationStatAgg> findRecentWeeklyData(
         @Param("districtId") Long districtId,
         @Param("fromDate") LocalDate fromDate
     );
