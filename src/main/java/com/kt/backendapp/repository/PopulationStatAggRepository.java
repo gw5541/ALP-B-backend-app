@@ -20,7 +20,7 @@ public interface PopulationStatAggRepository extends JpaRepository<PopulationSta
     /**
      * 특정 조건의 집계 데이터 조회
      */
-    @Query("SELECT p FROM PopulationStatAgg p WHERE p.districtId = :districtId " +
+    @Query("SELECT p FROM PopulationStatAgg p JOIN FETCH p.district WHERE p.districtId = :districtId " +
            "AND p.periodType = :periodType " +
            "AND p.periodStartDate >= :from AND p.periodStartDate <= :to " +
            "ORDER BY p.periodStartDate ASC")
@@ -34,14 +34,18 @@ public interface PopulationStatAggRepository extends JpaRepository<PopulationSta
     /**
      * 특정 기간의 집계 데이터 조회
      */
+    @Query("SELECT p FROM PopulationStatAgg p JOIN FETCH p.district WHERE p.districtId = :districtId " +
+           "AND p.periodType = :periodType AND p.periodStartDate = :periodStartDate")
     Optional<PopulationStatAgg> findByDistrictIdAndPeriodTypeAndPeriodStartDate(
-        Long districtId, PeriodType periodType, LocalDate periodStartDate
+        @Param("districtId") Long districtId, 
+        @Param("periodType") PeriodType periodType, 
+        @Param("periodStartDate") LocalDate periodStartDate
     );
     
     /**
      * 최근 N개월 데이터 조회
      */
-    @Query("SELECT p FROM PopulationStatAgg p WHERE p.districtId = :districtId " +
+    @Query("SELECT p FROM PopulationStatAgg p JOIN FETCH p.district WHERE p.districtId = :districtId " +
            "AND p.periodType = 'MONTHLY' " +
            "AND p.periodStartDate >= :fromDate " +
            "ORDER BY p.periodStartDate DESC")
